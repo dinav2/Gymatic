@@ -34,7 +34,7 @@ import {
   
   export function RecentSales() {
     const [userList, setUserList] = useState<Array<User>>([]);
-    const [registroList, setRegistroList] = useState<Array<Registro>>([]);
+    const [registroList, setRegistroList] = useState<Registro>({});
 
     useEffect(() => {
         const onSensorDataChange = async () => {
@@ -84,7 +84,7 @@ import {
                   <div className="flex items-center space-x-2 mr-6 ml-4">
                     {registroList.id ? (registroList.id.id1 == user.id ? (
                       <RadioGroupItem value="online" id="online" is-Online="true" />                      
-                    ) : (
+                    ) : ( 
                       <RadioGroupItem value="online" id="online" is-Online="false" />
                     )) : ("")
                       
