@@ -27,7 +27,7 @@ import {
 
 import { MainNav } from "@/components/main-nav"
 import { Overview } from "@/components/overview"
-import { RecentSales } from "@/components/recent-sales"
+import { UserTable } from "@/components/user-table"
 import { UserNav } from "@/components/user-nav"
 
 type sensores = {
@@ -238,7 +238,7 @@ export default function DashboardPage() {
                         <p>asd</p>
                     </TabsContent>
                     <TabsContent value="usuarios" className="space-y-4">
-                        <RecentSales />
+                        <UserTable />
                     </TabsContent>
                     </>
                 ) : ("")): ("")

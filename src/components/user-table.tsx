@@ -32,9 +32,13 @@ import {
     }
   }
   
-  export function RecentSales() {
+  export function UserTable() {
     const [userList, setUserList] = useState<Array<User>>([]);
-    const [registroList, setRegistroList] = useState<Registro>({});
+    const [registroList, setRegistroList] = useState<Registro>({
+      id: {
+        id1: "0"
+      }
+    });
 
     useEffect(() => {
         const onSensorDataChange = async () => {
