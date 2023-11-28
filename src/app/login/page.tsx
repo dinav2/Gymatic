@@ -16,7 +16,7 @@ import { Label } from "@radix-ui/react-label";
 export default function LoginPage() {
     return (
         <>
-            <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:px-0">
+            <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:px-0 2xl:grid xl:grid">
             <Link
               href="/signup"
               className={cn(
