@@ -2,14 +2,17 @@
 import React, {useEffect, useState} from "react";
 import Image from "next/image"
 import {useRouter} from "next/navigation";
-import { onValue, set, get, ref } from "firebase/database";
+import { onValue, ref } from "firebase/database";
 import { rtdb } from "@/dbConfig/firebase";
 import axios from "axios"
+import toast from "react-hot-toast";
+import logo from "@/components/images/logosinfondo.png"
+import bg from "@/components/images/backgroundImg.png"
 
 
 import { Icons } from "@/components/icons"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+
 import {
   Card,
   CardContent,
@@ -24,24 +27,23 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-
-import { MainNav } from "@/components/main-nav"
-import { Overview } from "@/components/overview"
+  
+import { NewUserForm } from "@/components/NewUserForm"
 import { UserTable } from "@/components/user-table"
 import { UserNav } from "@/components/user-nav"
 
 type sensores = {
-    nfc: boolean,
-    peso: number,
-    ph:   number,
+    mancuerna_correcta: boolean,
+    mancuerna_esta: boolean,
+    nfc:   boolean,
     presencia: boolean,
     temperatura:  number
 }
 
 type Cookie = {
     id: string,
+    idlogin: string
     username: string,
-    email: string,
     iat: string,
     exp: string,
 }
@@ -49,7 +51,7 @@ type Cookie = {
 type User = {
     email: string,
     id: string,
-    isAdmin: boolean,
+    admin: boolean,
     username: string,
 }
 
@@ -58,9 +60,9 @@ export default function DashboardPage() {
     const [userData, setUserData] = useState<User>()
     const [cookieData, setCookieData] = useState<Cookie>()
     const [sensorData, setSensorData] = useState<sensores>({
+        mancuerna_correcta: false,
+        mancuerna_esta: false,
         nfc: false,
-        peso: 0,
-        ph:   0,
         presencia: false,
         temperatura:  0
     });
@@ -83,11 +85,9 @@ export default function DashboardPage() {
                 const cookie = await axios.get('/api/getToken')
                 const value = JSON.parse(atob(cookie.data.data.value.split(".")[1]));          
                 setCookieData(value);
-                
                 const usersRef = ref(rtdb, 'usuarios/' + value.id);
                 onValue(usersRef, (snapshot) => {
                     const data = snapshot.val();
-                    console.log(data);
                     setUserData(data);
                 });
             } catch (error: any) {
@@ -104,23 +104,38 @@ export default function DashboardPage() {
 
     return (
         <>
-        <div className="hidden flex-col md:flex">
-            <div className="border-b">
-            <div className="flex h-16 items-center px-4">
-                <MainNav className="mx-6" />
-                <div className="ml-auto flex items-center space-x-4">
-                <UserNav />
-                </div>
-            </div>
-            </div>
-            <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
+        <div className="hidden flex-col 2xl:flex xl:flex lg:flex md:flex sm:flex xs:flex">
+            <Image
+                src={bg}
+                placeholder="blur"
+                quality={100}
+                fill
+                sizes="100vw"
+                style={{
+                    objectFit: 'cover',
+                    opacity: 0.4,
+                }}
+                alt="bg"
+                className="z-0"
+            />
+            <div className="flex-1 space-y-4 p-8 pt-6 z-10">            
+            <div className="flex items-center justify-between space-y-2 z-0 bg-transparent">    
+                <div className="inline-flex items-center -mb-4">
+                <Image
+                    src={logo}
+                    width={200}
+                    height={300}
+                    alt="logo"
+                    className="-mr-14 -ml-16"
+                />
                 <h2 className="text-3xl font-bold tracking-tight">Gymatic</h2>
+                </div>                            
+                <UserNav />
             </div>
-            <Tabs defaultValue="dashboard" className="space-y-4">
+            <Tabs defaultValue="dashboard" className="space-y-4 z-1">
                 <TabsList>
                 <TabsTrigger value="dashboard">Gym</TabsTrigger>
-                {userData ? ( userData.isAdmin ? (
+                {userData ? ( userData.admin ? (
                     <>
                     <TabsTrigger value="entradas">
                         Entradas
@@ -132,8 +147,8 @@ export default function DashboardPage() {
                 ) : ("")): ("")
                 }                                
                 </TabsList>
-                <TabsContent value="dashboard" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <TabsContent value="dashboard" className="space-y-4 z-1">
+                <div className="grid gap-4 grid-cols-4 md:grid-cols-2 lg:grid-cols-4 sm:grid-cols-2 xs:grid-cols-1">
                     <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
@@ -148,35 +163,7 @@ export default function DashboardPage() {
                         </>)}
                         </div>
                     </CardContent>
-                    </Card>
-                    <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                        PH Alberca
-                        </CardTitle>
-                        <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
-                        >
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{(sensorData.ph != undefined || sensorData)  ? (sensorData.ph) : (
-                            <>
-                            <Skeleton className="w-[150px] h-[20px] rounded-full" />
-                            </>)}
-                        </div>
-                    </CardContent>
-                    </Card>
+                    </Card>                
                     <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{(sensorData.presencia == true)  ? ("Maquina ocupada") : ("Maquina desocupada")}</CardTitle>
@@ -201,7 +188,7 @@ export default function DashboardPage() {
                         </p>
                     </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
                         Peso
@@ -220,25 +207,40 @@ export default function DashboardPage() {
                         </svg>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{(sensorData.peso != undefined || sensorData)  ? (sensorData.peso+"lb") : (
-                            <>
-                            <Skeleton className="w-[150px] h-[20px] rounded-full" />
-                            </>)}
+                        <div className="2xl:text-2xl xl:text-xl lg:text-lg md:text-md sm:text-sm font-bold">
+                            <div className="grid-container relative ">
+                                {(sensorData.mancuerna_esta) ? (
+                                    (sensorData.mancuerna_correcta) ? (
+                                        <div className="bg-greenn">10<em>lb</em></div>
+                                    ) : (
+                                        <div className="bg-yelloww">10<em>lb</em></div>
+                                    )
+                                ) : (
+                                    <div className="bg-redd">10<em>lb</em></div>
+                                )}                                
+                                <div className="bg-redd">10<em>lb</em></div>
+                                <div className="bg-redd">15<em>lb</em></div>  
+                                <div className="bg-redd">15<em>lb</em></div>
+                                <div className="bg-redd">20<em>lb</em></div>
+                                <div className="bg-redd">20<em>lb</em></div>  
+                                <div className="bg-redd">25<em>lb</em></div>
+                                <div className="bg-redd">25<em>lb</em></div>
                             </div>
-                        <p className="text-xs text-muted-foreground">
-                        
-                        </p>
+                        </div>
                     </CardContent>
                     </Card>
                 </div>
                 </TabsContent>
-                {userData ? ( userData.isAdmin ? (
+                {userData ? ( userData.admin ? (
                     <>
                     <TabsContent value="entradas" className="space-y-4">
                         <p>asd</p>
                     </TabsContent>
                     <TabsContent value="usuarios" className="space-y-4">
                         <UserTable />
+                        <NewUserForm />
+
+                        
                     </TabsContent>
                     </>
                 ) : ("")): ("")

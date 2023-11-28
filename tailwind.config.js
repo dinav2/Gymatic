@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 module.exports = {
+  
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -12,11 +15,26 @@ module.exports = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        "sm": "640px",
+        "md": "768px",
+        "lg": "1024px",
+        "xl": "1280px",
+        "2xl": "1536px",
       },
     },
     extend: {
+      screens: {
+        "sm": { "min": "400px", "max": "640px"},
+        "md": { "min": "640px", "max": "768px"},
+        "lg": { "min": "768px", "max": "1024px"},
+        "xl": { "min": "1024px", "max": "1280px"},
+        "2xl": { "min": "1280px", "max": "1920px"},
+        "xs": { "max": "400px"},
+      },
       colors: {
+        'redd': '#ed9aae',
+        'greenn': '#92d687',
+        'yelloww': '#f7bd59',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

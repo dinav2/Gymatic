@@ -21,9 +21,11 @@ import {
   } from "@/components/ui/avatar"
 
   type User = {
-    username: string,
+    ['nombre(s)']: string,
+    ['apellido(s)']: string,
     email: string,
-    id: string
+    id: string,
+    asistencia: boolean
   }
 
   type Registro = {
@@ -54,21 +56,7 @@ import {
           }
         };
 
-        const onRegistroDataChange = async () => {
-          try {
-            const userRef = ref(rtdb, 'registro/')
-            onValue(userRef, (snapshot) => {
-                const data = snapshot.val();
-                console.log(data);
-                setRegistroList(data);
-            });
-          } catch (err) { 
-            console.error(err);
-          }
-        };
-
         onSensorDataChange();
-        onRegistroDataChange();
     }, [])
 
     return (
@@ -86,7 +74,7 @@ import {
                 <div className="flex items-center">
                 <RadioGroup defaultValue="online">
                   <div className="flex items-center space-x-2 mr-6 ml-4">
-                    {registroList.id ? (registroList.id.id1 == user.id ? (
+                    {user ? (user.asistencia == true ? (
                       <RadioGroupItem value="online" id="online" is-Online="true" />                      
                     ) : ( 
                       <RadioGroupItem value="online" id="online" is-Online="false" />
@@ -99,10 +87,10 @@ import {
 
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                      <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>{user['nombre(s)'][0].toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.username}</p>
+                      <p className="text-sm font-medium leading-none">{user['nombre(s)'] + " " + user['apellido(s)']}</p>
                       <p className="text-sm text-muted-foreground">
                       {user.email}
                       </p>

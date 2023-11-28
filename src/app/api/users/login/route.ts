@@ -11,21 +11,43 @@ export async function POST(request: NextRequest) {
 
     // Authenticate the user with Firebase Authentication
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // const user = userCredential.user;
 
-      // Retrieve user data from Firebase Realtime Database
-      const userRef = ref(rtdb, 'usuarios/' + user.uid);
+      // // Retrieve user data from Firebase Realtime Database
+      // const userRef = ref(rtdb, 'usuarios/' + user.uid);
+      // const userSnapshot = await get(userRef);
+      // const userData = userSnapshot.val();
+
+      // if (userData) {
+      //   // Create token data
+      //   const tokenData = {
+      //     id: user.uid,
+      //     username: userData.nombre || '', // Check if 'username' exists, and provide a default value
+      //     email: user.email,
+      //     isVerified: userData.isVerified,
+      //   };
+
+      //   // Create token
+      //   const token = jwt.sign(tokenData, "iotToken", { expiresIn: "1d" });
+
+      //   const response = NextResponse.json({
+      //     message: "Login successful",
+      //     success: true,
+      //   });
+      //   response.cookies.set("token", token, {
+      //     httpOnly: true,
+      //   });
+
+      const userRef = ref(rtdb, 'usuarios/' + email);
       const userSnapshot = await get(userRef);
       const userData = userSnapshot.val();
 
       if (userData) {
         // Create token data
         const tokenData = {
-          id: user.uid,
-          username: userData.username || '', // Check if 'username' exists, and provide a default value
-          email: user.email,
-          isVerified: userData.isVerified,
+          id: email,
+          username: userData['nombre(s)'] || '', // Check if 'username' exists, and provide a default value
         };
 
         // Create token
@@ -38,6 +60,8 @@ export async function POST(request: NextRequest) {
         response.cookies.set("token", token, {
           httpOnly: true,
         });
+
+
 
         return response;
       } else {

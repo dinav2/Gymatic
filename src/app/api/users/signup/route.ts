@@ -8,23 +8,37 @@ import { rtdb, auth } from "@/dbConfig/firebase";
 export async function POST(request: NextRequest){
     try {
         const reqBody = await request.json();
-        const { username, email, password } = reqBody;
-        const id = "", isAdmin = false, isVerified = false;
+        const { nombre, apellido, edad, membresia, sexo } = reqBody;
         console.log(reqBody);
 
-        try {
-            // Create a new user with Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
 
-            // Store user data in Firebase Realtime Database
-            const userRef = ref(rtdb, 'usuarios/' + user.uid);
+        try {
+            // // Create a new user with Firebase Authentication
+            // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            // const user = userCredential.user;
+
+            // // Store user data in Firebase Realtime Database
+            // const userRef = ref(rtdb, 'usuarios/' + user.uid);
+            // await set(userRef, {
+            //     username,
+            //     email,
+            //     id,
+            //     isAdmin,
+            // });
+
+            const userRef = ref(rtdb, 'usuarios/' + membresia);
             await set(userRef, {
-                username,
-                email,
-                id,
-                isAdmin,
+                admin: false,
+                'apellido(s)': apellido,
+                asistencia: false,
+                edad: edad,
+                fecha_fin:"",
+                fecha_inicio: "",
+                membresia: true,
+                'nombre(s)': nombre,
+                sexo: sexo                
             });
+
 
             return NextResponse.json({
                 message: "User created successfully",
