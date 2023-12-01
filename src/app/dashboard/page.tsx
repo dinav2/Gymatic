@@ -1,22 +1,22 @@
 "use client"
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import Image from "next/image"
 import {useRouter} from "next/navigation";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, set } from "firebase/database";
 import { rtdb } from "@/dbConfig/firebase";
 import axios from "axios"
-import toast from "react-hot-toast";
 import logo from "@/components/images/logosinfondo.png"
 import bg from "@/components/images/backgroundImg.png"
 
 
 import { Icons } from "@/components/icons"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
+
 
 import {
-  Card,
+  Card, 
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -31,6 +31,7 @@ import {
 import { NewUserForm } from "@/components/NewUserForm"
 import { UserTable } from "@/components/user-table"
 import { UserNav } from "@/components/user-nav"
+import { Overview } from "@/components/overview";
 
 type sensores = {
     mancuerna_correcta: boolean,
@@ -55,10 +56,13 @@ type User = {
     username: string,
 }
 
+type actuadores = {
+    ventilador: number
+}
+
 export default function DashboardPage() {
     const router = useRouter()
     const [userData, setUserData] = useState<User>()
-    const [cookieData, setCookieData] = useState<Cookie>()
     const [sensorData, setSensorData] = useState<sensores>({
         mancuerna_correcta: false,
         mancuerna_esta: false,
@@ -66,6 +70,9 @@ export default function DashboardPage() {
         presencia: false,
         temperatura:  0
     });
+    const [actuadorData, setActuadorData] = useState<actuadores>({
+        ventilador: 0,
+    })
 
     useEffect(() => {
         const onSensorDataChange = async () => {
@@ -84,7 +91,6 @@ export default function DashboardPage() {
             try {
                 const cookie = await axios.get('/api/getToken')
                 const value = JSON.parse(atob(cookie.data.data.value.split(".")[1]));          
-                setCookieData(value);
                 const usersRef = ref(rtdb, 'usuarios/' + value.id);
                 onValue(usersRef, (snapshot) => {
                     const data = snapshot.val();
@@ -98,7 +104,44 @@ export default function DashboardPage() {
         fetchData();
         onSensorDataChange();
     }, [])
+    
+    useEffect(() => {
+        
+        const getActuadorData = async () => {
+            try {
+              const entriesRef = ref(rtdb, 'actuadores/');
+              onValue(entriesRef, (snapshot) => {
+                const data = snapshot.val();
+                setActuadorData(data);
+              });
+            } catch (err) { 
+              console.error(err);
+            }
+        };
 
+        getActuadorData()
+
+    },[]);
+
+    function switchClick(event: any) {
+        try {
+            const target = event.target as HTMLElement;
+            if (actuadorData.ventilador === 0) {
+              writeUserData(1);
+              //target.setAttribute('checked', 'true');
+            } else {
+              writeUserData(0);
+              //target.setAttribute('checked', 'false');
+            }
+          } catch (err) {
+            console.error(err);
+          }
+          return false;
+    }
+    
+    function writeUserData(int: number) {
+        set(ref(rtdb, 'actuadores/ventilador/'), int);
+    }
     
     
 
@@ -137,8 +180,8 @@ export default function DashboardPage() {
                 <TabsTrigger value="dashboard">Gym</TabsTrigger>
                 {userData ? ( userData.admin ? (
                     <>
-                    <TabsTrigger value="entradas">
-                        Entradas
+                    <TabsTrigger value="control">
+                        Control
                     </TabsTrigger>
                     <TabsTrigger value="usuarios">
                         Usuarios
@@ -149,7 +192,7 @@ export default function DashboardPage() {
                 </TabsList>
                 <TabsContent value="dashboard" className="space-y-4 z-1">
                 <div className="grid gap-4 grid-cols-4 md:grid-cols-2 lg:grid-cols-4 sm:grid-cols-2 xs:grid-cols-1">
-                    <Card>
+                    <Card className="sm:col-span-2 xs:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
                         Temperatura
@@ -164,7 +207,7 @@ export default function DashboardPage() {
                         </div>
                     </CardContent>
                     </Card>                
-                    <Card>
+                    <Card className="sm:col-span-2 xs:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{(sensorData.presencia == true)  ? ("Maquina ocupada") : ("Maquina desocupada")}</CardTitle>
                         <svg
@@ -233,8 +276,63 @@ export default function DashboardPage() {
                 </TabsContent>
                 {userData ? ( userData.admin ? (
                     <>
-                    <TabsContent value="entradas" className="space-y-4">
-                        <p>asd</p>
+                    <TabsContent value="control" className="space-y-4">
+                        <Card className="col-span-2 xl:col-span-1 sm:col-span-2 xs:col-span-2">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Encender Ventilador</CardTitle>
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                className="h-4 w-4 text-muted-foreground"
+                                >
+                                <rect width="20" height="14" x="2" y="5" rx="2" />
+                                <path d="M2 10h20" />
+                                </svg>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold"></div>
+                                <p className="text-xs text-muted-foreground">
+                                    { actuadorData.ventilador === 0 ? (
+                                        <>
+                                        <Switch onClick={switchClick} id="switchLight" />
+                                        <p id="switchLabel" className="ml-2 w-6">Off</p>
+                                        </>
+                                        ) : (
+                                        <>
+                                        <Switch onClick={switchClick} id="switchLight"  defaultChecked/> 
+                                        <p id="switchLabel" className="ml-2 w-6">On</p>
+                                        </>
+                                    )}
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card className="col-span-2 xl:col-span-1 sm:col-span-2 xs:col-span-2">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Personas activas</CardTitle>
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                className="h-4 w-4 text-muted-foreground"
+                                >
+                                <rect width="20" height="14" x="2" y="5" rx="2" />
+                                <path d="M2 10h20" />
+                                </svg>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold"></div>
+                                <Overview />
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                     <TabsContent value="usuarios" className="space-y-4">
                         <UserTable />

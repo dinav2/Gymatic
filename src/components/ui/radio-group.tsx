@@ -34,7 +34,7 @@ const RadioGroupItem = React.forwardRef<
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center ">
-        {props['is-Online' as keyof typeof props] == "false" ? (
+        {props['is-online' as keyof typeof props] == "false" ? (
           <Circle color="##7e877f" className="h-2.5 w-2.5 fill-gray-500 text-current opacity-80" />
         ) : (
           <Circle color="#15b323" className="h-2.5 w-2.5 fill-green-600 text-current opacity-80" />

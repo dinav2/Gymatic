@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { onValue, set, get, ref } from "firebase/database";
+import { onValue, ref } from "firebase/database";
 import { rtdb } from "@/dbConfig/firebase";
 
 import { Label } from "@/components/ui/label"
@@ -43,12 +43,11 @@ import {
     });
 
     useEffect(() => {
-        const onSensorDataChange = async () => {
+        const getUsersData = async () => {
           try {
             const userRef = ref(rtdb, 'usuarios/')
             onValue(userRef, (snapshot) => {
                 const data = snapshot.val();
-                console.log(data);
                 setUserList(data);
             });
           } catch (err) { 
@@ -56,7 +55,7 @@ import {
           }
         };
 
-        onSensorDataChange();
+        getUsersData();
     }, [])
 
     return (
@@ -75,9 +74,9 @@ import {
                 <RadioGroup defaultValue="online">
                   <div className="flex items-center space-x-2 mr-6 ml-4">
                     {user ? (user.asistencia == true ? (
-                      <RadioGroupItem value="online" id="online" is-Online="true" />                      
+                      <RadioGroupItem value="online" id="online" is-online="true" />                      
                     ) : ( 
-                      <RadioGroupItem value="online" id="online" is-Online="false" />
+                      <RadioGroupItem value="online" id="online" is-online="false" />
                     )) : ("")
                       
                     }
