@@ -1,62 +1,75 @@
-"use client"
+import React, { useEffect, useState } from "react";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { onValue, ref } from "firebase/database";
+import { rtdb } from "@/dbConfig/firebase";
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-
-const data = [
-  {
-    name: "Jan",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Feb",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Mar",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Apr",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "May",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jun",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jul",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Aug",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Sep",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Oct",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Nov",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Dec",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-]
+type User = {
+  ["nombre(s)"]: string;
+  ["apellido(s)"]: string;
+  email: string;
+  id: string;
+  asistencia: boolean;
+  sexo: string;
+};
 
 export function Overview() {
+  const [userList, setUserList] = useState<Array<User>>([]);
+  const [dataTable, setDataTable] = useState([
+    {
+      name: "Hombres",
+      total: 0,
+    },
+    {
+      name: "Mujeres",
+      total: 0,
+    },
+  ]);
+
+  useEffect(() => {
+    const getUsersData = async () => {
+      try {
+        const userRef = ref(rtdb, "usuarios/");
+        onValue(userRef, (snapshot) => {
+          const data = snapshot.val();
+          setUserList(data);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getUsersData();
+  }, []); // Ensure to add userList to the dependency array if you need to trigger the effect on userList changes
+
+  useEffect(() => {
+    let asistentesHombres = 0;
+    let asistentesMujeres = 0;
+
+    Object.values(userList).forEach((user: User) => {
+      if (user.asistencia) {
+        if (user.sexo === "masculino") {
+          asistentesHombres++;
+        } else {
+          asistentesMujeres++;
+        }
+      }
+    });
+
+    setDataTable([
+      {
+        name: "Hombres",
+        total: asistentesHombres,
+      },
+      {
+        name: "Mujeres",
+        total: asistentesMujeres,
+      },
+    ]);
+  }, [userList]);
+
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
+      <BarChart data={dataTable}>
         <XAxis
           dataKey="name"
           stroke="#888888"
@@ -69,10 +82,11 @@ export function Overview() {
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value: any) => `$${value}`}
+          tickFormatter={(value: any) => `${value}`}
+          allowDecimals={false}
         />
         <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
-  )
+  );
 }
