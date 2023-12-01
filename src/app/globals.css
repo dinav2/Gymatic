@@ -35,7 +35,7 @@
     --radius: 0.5rem;
   }
 
-  body, html {
+  body, html, :root {
     margin: 0;
     padding: 0;
     height: 100%;
@@ -43,7 +43,6 @@
 
 body {
   background-image: url(../components/images/Img2transparente.png);
-  overflow-y: scroll; /* This allows vertical scrolling when content exceeds viewport height */
   background-repeat: repeat-y;
   min-height: 100vh;
   background-position: center;
