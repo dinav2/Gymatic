@@ -6,7 +6,7 @@ import { onValue, ref, set } from "firebase/database";
 import { rtdb } from "@/dbConfig/firebase";
 import axios from "axios"
 import logo from "@/components/images/logosinfondo.png"
-import bg from "@/components/images/backgroundImg.png"
+import bg from "@/components/images/Img2.jpeg"
 
 
 import { Icons } from "@/components/icons"
@@ -38,16 +38,11 @@ type sensores = {
     mancuerna_esta: boolean,
     nfc:   boolean,
     presencia: boolean,
-    temperatura:  number
+    temperatura:  number,
+    ventilador: boolean
 }
 
-type Cookie = {
-    id: string,
-    idlogin: string
-    username: string,
-    iat: string,
-    exp: string,
-}
+
 
 type User = {
     email: string,
@@ -68,11 +63,9 @@ export default function DashboardPage() {
         mancuerna_esta: false,
         nfc: false,
         presencia: false,
-        temperatura:  0
+        temperatura:  0,
+        ventilador: false
     });
-    const [actuadorData, setActuadorData] = useState<actuadores>({
-        ventilador: 0,
-    })
 
     useEffect(() => {
         const onSensorDataChange = async () => {
@@ -104,33 +97,15 @@ export default function DashboardPage() {
         fetchData();
         onSensorDataChange();
     }, [])
-    
-    useEffect(() => {
-        
-        const getActuadorData = async () => {
-            try {
-              const entriesRef = ref(rtdb, 'actuadores/');
-              onValue(entriesRef, (snapshot) => {
-                const data = snapshot.val();
-                setActuadorData(data);
-              });
-            } catch (err) { 
-              console.error(err);
-            }
-        };
-
-        getActuadorData()
-
-    },[]);
 
     function switchClick(event: any) {
         try {
             const target = event.target as HTMLElement;
-            if (actuadorData.ventilador === 0) {
-              writeUserData(1);
+            if (sensorData.ventilador === false) {
+              writeUserData(true);
               //target.setAttribute('checked', 'true');
             } else {
-              writeUserData(0);
+              writeUserData(false);
               //target.setAttribute('checked', 'false');
             }
           } catch (err) {
@@ -139,8 +114,8 @@ export default function DashboardPage() {
           return false;
     }
     
-    function writeUserData(int: number) {
-        set(ref(rtdb, 'actuadores/ventilador/'), int);
+    function writeUserData(bool: boolean) {
+        set(ref(rtdb, 'sensores/ventilador/'), bool);
     }
     
     
@@ -148,19 +123,7 @@ export default function DashboardPage() {
     return (
         <>
         <div className="hidden flex-col 2xl:flex xl:flex lg:flex md:flex sm:flex xs:flex">
-            <Image
-                src={bg}
-                placeholder="blur"
-                quality={100}
-                fill
-                sizes="100vw"
-                style={{
-                    objectFit: 'cover',
-                    opacity: 0.4,
-                }}
-                alt="bg"
-                className="z-0"
-            />
+            
             <div className="flex-1 space-y-4 p-8 pt-6 z-10">            
             <div className="flex items-center justify-between space-y-2 z-0 bg-transparent">    
                 <div className="inline-flex items-center -mb-4">
@@ -171,7 +134,7 @@ export default function DashboardPage() {
                     alt="logo"
                     className="-mr-14 -ml-16"
                 />
-                <h2 className="text-3xl font-bold tracking-tight">Gymatic</h2>
+                <h2 className="text-3xl font-bold tracking-tight">Gymmatic</h2>
                 </div>                            
                 <UserNav />
             </div>
@@ -272,6 +235,28 @@ export default function DashboardPage() {
                         </div>
                     </CardContent>
                     </Card>
+                    <Card className="col-span-2 xl:col-span-1 sm:col-span-2 xs:col-span-2">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Personas activas</CardTitle>
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                className="h-4 w-4 text-muted-foreground"
+                                >
+                                <rect width="20" height="14" x="2" y="5" rx="2" />
+                                <path d="M2 10h20" />
+                                </svg>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold"></div>
+                                <Overview />
+                            </CardContent>
+                        </Card>
                 </div>
                 </TabsContent>
                 {userData ? ( userData.admin ? (
@@ -297,7 +282,7 @@ export default function DashboardPage() {
                             <CardContent>
                                 <div className="text-2xl font-bold"></div>
                                 <p className="text-xs text-muted-foreground">
-                                    { actuadorData.ventilador === 0 ? (
+                                    { sensorData.ventilador === false ? (
                                         <>
                                         <Switch onClick={switchClick} id="switchLight" />
                                         <p id="switchLabel" className="ml-2 w-6">Off</p>
@@ -310,29 +295,7 @@ export default function DashboardPage() {
                                     )}
                                 </p>
                             </CardContent>
-                        </Card>
-                        <Card className="col-span-2 xl:col-span-1 sm:col-span-2 xs:col-span-2">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Personas activas</CardTitle>
-                                <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                className="h-4 w-4 text-muted-foreground"
-                                >
-                                <rect width="20" height="14" x="2" y="5" rx="2" />
-                                <path d="M2 10h20" />
-                                </svg>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold"></div>
-                                <Overview />
-                            </CardContent>
-                        </Card>
+                        </Card>                        
                     </TabsContent>
                     <TabsContent value="usuarios" className="space-y-4">
                         <UserTable />
